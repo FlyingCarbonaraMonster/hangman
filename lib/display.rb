@@ -17,8 +17,8 @@ class Display
     puts text
   end
 
-  def win_message
-    puts 'You won! Congratulations!'
+  def win_message(secret_word)
+    puts "That's right! The word was #{secret_word}, congratulations!"
   end
 
   def lose_message(secret_word)
