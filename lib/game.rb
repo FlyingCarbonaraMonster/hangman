@@ -19,7 +19,7 @@ class Game
       @display.display_board(@secret_word, @guesses, @remaining_turns)
       process_input(player_input)
     end
-    won? ? @display.win_message : @display.lose_message(@secret_word)
+    won? ? @display.win_message(@secret_word) : @display.lose_message(@secret_word)
   end
 
   private
@@ -28,16 +28,41 @@ class Game
     save_list = @file_manager.list_saves
     return new_game if save_list.empty?
 
-    @display.message('Do you want to start a new game(1) or load a previous game(2)?')
+    @display.message('Do you want to start a new game(1), load a previous game(2) or delete a game(3)?')
+    handle_menu_choices(save_list)
+  end
+
+  def handle_menu_choices(save_list)
     user_input = gets.chomp
-    user_input == '2' ? load_saved_game(save_list) : new_game
+    case user_input
+    when '1' then new_game
+    when '2' then load_saved_game(save_list)
+    when '3' then delete_saved_game(save_list)
+    else
+      @display.message('Invalid input, try again.')
+      setup_game
+    end
   end
 
   def load_saved_game(save_list)
+    @secret_word, @guesses, @remaining_turns = @file_manager.load_game(choose_save_file(save_list))
+  end
+
+  def choose_save_file(save_list)
     save_list.each_with_index { |save, idx| @display.message("#{idx + 1} - #{save}") }
-    @display.message('Choose a save file:')
-    chosen_save_file = gets.chomp.to_i
-    @secret_word, @guesses, @remaining_turns = @file_manager.load_game(save_list[chosen_save_file - 1])
+    loop do
+      @display.message('Choose a save file:')
+      save_file_index = gets.chomp.to_i
+      return save_list[save_file_index - 1] if save_file_index.between?(1, save_list.length)
+
+      @display.message('Invalid file index, try again.')
+    end
+  end
+
+  def delete_saved_game(save_list)
+    @file_manager.delete_save(choose_save_file(save_list))
+    @display.message('Save file deleted.')
+    setup_game
   end
 
   def new_game
