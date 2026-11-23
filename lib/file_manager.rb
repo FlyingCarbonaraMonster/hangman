@@ -30,4 +30,8 @@ class FileManager
     deserialized_file = JSON.parse(file, symbolize_names: true)
     deserialized_file.values_at(:secret_word, :guesses, :remaining_turns)
   end
+
+  def delete_save(filename)
+    FileUtils.rm_f(File.join(SAVE_PATH, filename))
+  end
 end
